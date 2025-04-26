@@ -1,86 +1,115 @@
 <script>
-  import { onMount } from "svelte";
-  import { prefersReducedMotion } from "svelte/motion";
+    import { onMount } from "svelte";
+    
+    // Define default values for the game state
+    const defaultState = {
+        totalRot: 0,
+        rotCoins: 0,
+        perSec: 0,
+        multi: 1,
+        x2: false,
+        x10: false,
+        autoTechUnlocked: false
+    };
 
-    let totalRot = $state(0);
-    let rotCoins = $state(50000);
-    let perSec = $state(0);
-    let multi = $state(1);
-    let x2 = $state(false);
-    let x10 =  $state(false);
-    let autoTechUnlocked = $state(false);
+    // Load state from localStorage or use defaults (only on client)
+    function loadState() {
+        if (typeof window === "undefined") {
+            return defaultState; // Prevents accessing localStorage during SSR
+        }
 
+        const savedState = localStorage.getItem('gameState');
+        return savedState ? JSON.parse(savedState) : defaultState;
+    }
+
+    // Store the game state in a reactive object
+    let state = loadState();
+
+    // Watch for changes and save to localStorage (only on client)
+    $: {
+        if (typeof window !== "undefined") {
+            localStorage.setItem('gameState', JSON.stringify(state));
+        }
+    }
+
+    // Load initial message when mounted
     onMount(function welcome() {
-        alert("Brain Rot Clicker\n\nbuy more screens, watch more videos, expand your knowledge of brainrot")
-    })
+        alert("Brain Rot Clicker\n\nBuy more screens, watch more videos, expand your knowledge of brainrot.");
+    });
 
+    // Functions for the game logic
     function increment() {
-		rotCoins += (1 * multi);
-        totalRot += (1 * multi);
+        state.rotCoins += (1 * state.multi);
+        state.totalRot += (1 * state.multi);
+    }
 
-	}
     function timer() {
-        rotCoins += perSec;
-        totalRot += perSec;
+        state.rotCoins += state.perSec;
+        state.totalRot += state.perSec;
     }
     setInterval(timer, 1000);
 
     function buyField() {
-        if (rotCoins >= 50) {
-            rotCoins -= 50;
-            multi += 1;
-            x2 = false;
-        } else { 
-            x2 = true;
+        if (state.rotCoins >= 50) {
+            state.rotCoins -= 50;
+            state.multi += 1;
+            state.x2 = false;
+        } else {
+            state.x2 = true;
         }
 
-        if (x2) {
+        if (state.x2) {
             alert("You must have at least $50 for a new screen!");
         }
     }
 
     function buyX10() {
-        if (rotCoins >= 1000) {
-            rotCoins -= 1000;
-            multi += 10;
-            x10 = false;
-        } else { 
-            x10 = true;
+        if (state.rotCoins >= 1000) {
+            state.rotCoins -= 1000;
+            state.multi += 10;
+            state.x10 = false;
+        } else {
+            state.x10 = true;
         }
 
-        if (x10) {
-            alert("You must have at least $1000 for a new screen!");
+        if (state.x10) {
+            alert("You must have at least $1000 for 10 new screens!");
         }
     }
 
     function buyAutoTech() {
-        if (rotCoins >= 15000) {
-            rotCoins -= 15000;
-            autoTechUnlocked = true;
+        if (state.rotCoins >= 15000) {
+            state.rotCoins -= 15000;
+            state.autoTechUnlocked = true;
         }
 
-        if ((autoTechUnlocked == false) && (rotCoins < 15000)) {
+        if (!state.autoTechUnlocked && state.rotCoins < 15000) {
             alert("You must have at least $15000 to unlock Auto-Rot Technologies!");
         }
     }
 
     function buyFollower() {
-        if (rotCoins >= 15000) {
-            perSec += 25;
-            rotCoins -= 15000;
+        if (state.rotCoins >= 15000) {
+            state.perSec += 25;
+            state.rotCoins -= 15000;
         }
+    }
+
+    function resetGame() {
+        if (typeof window !== "undefined") {
+            localStorage.removeItem('gameState'); // Clear localStorage
+        }
+        state = { ...defaultState }; // Reset state to default values
     }
 </script>
 
-
-<h1>brain rot clicker</h1>
+<h1>Brain Rot Clicker</h1>
 <div>
-    <p>Percieved Rot: {totalRot}</p>
-    <p>screens owned: {multi}</p> 
-    <p>Rotcoins: ${rotCoins}</p>
-    <p>Rot per second: {perSec}</p>
+    <p>Percieved Rot: {state.totalRot}</p>
+    <p>screens owned: {state.multi}</p> 
+    <p>Rotcoins: ${state.rotCoins}</p>
+    <p>Rot per second: {state.perSec}</p>
 </div>
-
 
 <div>
     <p style="display: inline; color:red">Seek Rot:</p>
@@ -96,8 +125,6 @@
     </button>
 </div>
 
-
-
 <div>
     <p style="display: inline;">10 Extra Monitors: </p>
     <button onclick={buyX10}>
@@ -105,11 +132,10 @@
     </button>
 </div>
 
-
 <div>
     <div>
         <p style="display: inline;">Unlock Auto-Rot Technologies: </p>
-        {#if (autoTechUnlocked==false)}
+        {#if !state.autoTechUnlocked}
         <button onclick={buyAutoTech}>
             $15000 Rotcoins
         </button>
@@ -117,7 +143,7 @@
         <p style="display: inline;">Unlocked</p>
         {/if}
     </div>
-    {#if autoTechUnlocked}
+    {#if state.autoTechUnlocked}
     <div>
         <div>
             <p>Auto-Rot Technologies</p>
@@ -130,4 +156,8 @@
         </div>
     </div>
     {/if}
+</div>
+
+<div>
+    <button onclick={resetGame}>Reset Game</button>
 </div>
