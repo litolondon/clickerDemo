@@ -1,163 +1,291 @@
 <script>
     import { onMount } from "svelte";
-    
-    // Define default values for the game state
+
     const defaultState = {
         totalRot: 0,
         rotCoins: 0,
-        perSec: 0,
-        multi: 1,
-        x2: false,
-        x10: false,
-        autoTechUnlocked: false
+        perSec: 5000000,
+        screens: 1,
+        screenPoor: false,
+        x10Poor: false,
+        autoTechUnlocked: false,
+        screenCost: 50,
+        x10Cost: 1000,
+        autoTechCost: 2000,
+        followerCost: 1500
     };
 
-    // Load state from localStorage or use defaults (only on client)
     function loadState() {
-        if (typeof window === "undefined") {
-            return defaultState; // Prevents accessing localStorage during SSR
-        }
-
+        if (typeof window === "undefined") return defaultState;
         const savedState = localStorage.getItem('gameState');
         return savedState ? JSON.parse(savedState) : defaultState;
     }
 
-    // Store the game state in a reactive object
-    let state = loadState();
+    let user = loadState();
+    let videoButtonClicked = false; // <-- for jiggling the button
 
-    // Watch for changes and save to localStorage (only on client)
     $: {
         if (typeof window !== "undefined") {
-            localStorage.setItem('gameState', JSON.stringify(state));
+            localStorage.setItem('gameState', JSON.stringify(user));
         }
     }
 
-    // Load initial message when mounted
-    onMount(function welcome() {
+    onMount(() => {
         alert("Brain Rot Clicker\n\nBuy more screens, watch more videos, expand your knowledge of brainrot.");
     });
 
-    // Functions for the game logic
+    function formatNumber(num) {
+        return num.toLocaleString();
+    }
+
     function increment() {
-        state.rotCoins += (1 * state.multi);
-        state.totalRot += (1 * state.multi);
+        user.rotCoins += (1 * user.screens);
+        user.totalRot += (1 * user.screens);
+        
+        // Trigger jiggle animation
+        videoButtonClicked = true;
+        setTimeout(() => {
+            videoButtonClicked = false;
+        }, 100); // animation duration
     }
 
     function timer() {
-        state.rotCoins += state.perSec;
-        state.totalRot += state.perSec;
+        user.rotCoins += user.perSec;
+        user.totalRot += user.perSec;
     }
     setInterval(timer, 1000);
 
-    function buyField() {
-        if (state.rotCoins >= 50) {
-            state.rotCoins -= 50;
-            state.multi += 1;
-            state.x2 = false;
+    function buyScreen() {
+        if (user.rotCoins >= user.screenCost) {
+            user.rotCoins -= user.screenCost;
+            user.screens += 1;
+            user.screenCost = Math.floor(user.screenCost * 1.15);
+            user.screenPoor = false;
         } else {
-            state.x2 = true;
-        }
-
-        if (state.x2) {
-            alert("You must have at least $50 for a new screen!");
+            user.screenPoor = true;
+            alert(`You must have at least $${formatNumber(user.screenCost)} for a new screen!`);
         }
     }
 
     function buyX10() {
-        if (state.rotCoins >= 1000) {
-            state.rotCoins -= 1000;
-            state.multi += 10;
-            state.x10 = false;
+        if (user.rotCoins >= user.x10Cost) {
+            user.rotCoins -= user.x10Cost;
+            user.screens += 10;
+            user.x10Cost = Math.floor(user.x10Cost * 1.15);
+            user.x10Poor = false;
         } else {
-            state.x10 = true;
-        }
-
-        if (state.x10) {
-            alert("You must have at least $1000 for 10 new screens!");
+            user.x10Poor = true;
+            alert(`You must have at least $${formatNumber(user.x10Cost)} for 10 new screens!`);
         }
     }
 
     function buyAutoTech() {
-        if (state.rotCoins >= 15000) {
-            state.rotCoins -= 15000;
-            state.autoTechUnlocked = true;
-        }
-
-        if (!state.autoTechUnlocked && state.rotCoins < 15000) {
-            alert("You must have at least $15000 to unlock Auto-Rot Technologies!");
+        if (user.rotCoins >= user.autoTechCost) {
+            user.rotCoins -= user.autoTechCost;
+            user.autoTechUnlocked = true;
+        } else {
+            alert(`You must have at least $${formatNumber(user.autoTechCost)} to unlock Auto-Rot Technologies!`);
         }
     }
 
     function buyFollower() {
-        if (state.rotCoins >= 15000) {
-            state.perSec += 25;
-            state.rotCoins -= 15000;
+        if (user.rotCoins >= user.followerCost) {
+            user.perSec += 25;
+            user.rotCoins -= user.followerCost;
+            user.followerCost = Math.floor(user.followerCost * 1.25);
+        } else {
+            alert(`You must have at least $${formatNumber(user.followerCost)} for a Rot Cult Follower!`);
         }
     }
 
     function resetGame() {
         if (typeof window !== "undefined") {
-            localStorage.removeItem('gameState'); // Clear localStorage
+            localStorage.removeItem('gameState');
         }
-        state = { ...defaultState }; // Reset state to default values
+        user = { ...defaultState };
     }
 </script>
 
-<h1>Brain Rot Clicker</h1>
-<div>
-    <p>Percieved Rot: {state.totalRot}</p>
-    <p>screens owned: {state.multi}</p> 
-    <p>Rotcoins: ${state.rotCoins}</p>
-    <p>Rot per second: {state.perSec}</p>
-</div>
+<div class="game-grid">
+    <!-- Screen Emoji Section (Left Margin) -->
+    <div class="screens-section">
+        {#each Array(user.screens) as _}
+            <span class="screen-emoji">📺</span>
+        {/each}
+    </div>
 
-<div>
-    <p style="display: inline; color:red">Seek Rot:</p>
-    <button onclick={increment}>
-        Next Video
-    </button>
-</div>
+    <!-- Game Content Section -->
+    <div class="game-container">
+        <!-- Game Stats Section -->
+        <div class="stats">
+            <h1>Brain Rot Clicker</h1>
+            <p>Perceived Rot: {formatNumber(user.totalRot)}</p>
+            <p>Screens Owned: {user.screens}</p>
+            <p>Rotcoins: ${formatNumber(user.rotCoins)}</p>
+            <p>Rot per Second: {formatNumber(user.perSec)}</p>
+        </div>
 
-<div>
-    <p style="display: inline;">Extra Screen: </p>
-    <button onclick={buyField}>
-        $50 Rotcoins
-    </button>
-</div>
+        <!-- Clicker Shop (First Shop) -->
+        <div class="shop">
+            <h2>Clicker Shop</h2>
+            <div class="shop-item">
+                <p class="seek-rot-title">Seek Rot:</p>
+                <button 
+                    class={videoButtonClicked ? "video-jiggle" : ""}
+                    onclick={increment}>
+                    Next Video
+                </button>
+            </div>
+            <div class="shop-item">
+                <p>Extra Screen: </p>
+                <button 
+                    class={user.rotCoins >= user.screenCost ? "can-afford" : "cant-afford"}
+                    onclick={buyScreen}>
+                    ${formatNumber(user.screenCost)} Rotcoins
+                </button>
+            </div>
+            <div class="shop-item">
+                <p>10 Extra Monitors: </p>
+                <button 
+                    class={user.rotCoins >= user.x10Cost ? "can-afford" : "cant-afford"}
+                    onclick={buyX10}>
+                    ${formatNumber(user.x10Cost)} Rotcoins
+                </button>
+            </div>
 
-<div>
-    <p style="display: inline;">10 Extra Monitors: </p>
-    <button onclick={buyX10}>
-        $1000 Rotcoins
-    </button>
-</div>
+            <!-- Unlock Auto-Rot Technologies -->
+            {#if !user.autoTechUnlocked}
+                <div class="shop-item">
+                    <p>Unlock Auto-Rot Technologies:</p>
+                    <button 
+                        class={user.rotCoins >= user.autoTechCost ? "can-afford" : "cant-afford"}
+                        onclick={buyAutoTech}>
+                        ${formatNumber(user.autoTechCost)} Rotcoins
+                    </button>
+                </div>
+            {/if}
+        </div>
 
-<div>
-    <div>
-        <p style="display: inline;">Unlock Auto-Rot Technologies: </p>
-        {#if !state.autoTechUnlocked}
-        <button onclick={buyAutoTech}>
-            $15000 Rotcoins
-        </button>
-        {:else}
-        <p style="display: inline;">Unlocked</p>
+        <!-- Idle Tech Shop (Only Available After Unlocking Auto-Rot Technologies) -->
+        {#if user.autoTechUnlocked}
+            <div class="tech-upgrades">
+                <h2>Auto-Rot Technologies</h2>
+                <div class="shop-item">
+                    <p>Rot Cult Follower:</p>
+                    <button 
+                        class={user.rotCoins >= user.followerCost ? "can-afford" : "cant-afford"}
+                        onclick={buyFollower}>
+                        ${formatNumber(user.followerCost)} Rotcoins
+                    </button>
+                </div>
+            </div>
         {/if}
-    </div>
-    {#if state.autoTechUnlocked}
-    <div>
-        <div>
-            <p>Auto-Rot Technologies</p>
-        </div>
-        <div>
-            <p style="display: inline;">Rot Cult Follower: </p>
-            <button onclick={buyFollower}>
-                $15000 Rotcoins
-            </button>
+
+        <!-- Reset Button -->
+        <div class="reset">
+            <button onclick={resetGame}>Reset Game</button>
         </div>
     </div>
-    {/if}
 </div>
 
-<div>
-    <button onclick={resetGame}>Reset Game</button>
-</div>
+<style>
+    .game-grid {
+        display: grid;
+        grid-template-columns: 1fr 3fr; /* One column for the emoji section, three for the game content */
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        align-items: start;
+    }
+
+    .screens-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); /* Auto-fill with wrapping */
+        grid-gap: 10px;
+        padding: 10px;
+    }
+
+    .screen-emoji {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .game-container {
+        font-family: 'Arial', sans-serif;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+        color: #4caf50;
+        font-size: 24px;
+    }
+
+    .stats, .shop, .tech-upgrades, .reset {
+        margin-bottom: 20px;
+    }
+
+    .shop-item {
+        margin: 10px 0;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+        border-radius: 8px;
+        margin: 5px 0;
+    }
+
+    .seek-rot-title {
+        color: #4caf50;
+    }
+
+    .can-afford {
+        background-color: #4caf50; /* Green */
+        color: white;
+    }
+
+    .cant-afford {
+        background-color: #f44336; /* Red */
+        color: white;
+    }
+
+    .can-afford:hover,
+    .cant-afford:hover {
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .video-jiggle {
+        animation: jiggle 0.1s;
+    }
+
+    @keyframes jiggle {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .reset {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .reset button {
+        background-color: #f44336; /* Red */
+        color: white;
+        font-size: 18px;
+    }
+</style>
