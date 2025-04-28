@@ -264,7 +264,8 @@
         display: grid;
         grid-template-columns: 1fr 3fr 1fr; /* Three columns: left (screens), middle (game content), right (followers) */
         gap: 20px;
-        max-width: 1200px;
+        width: 85dvw;
+        height: 90dvh;
         margin: 0 auto;
         padding: 20px;
         align-items: start;
