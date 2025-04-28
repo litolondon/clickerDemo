@@ -4,9 +4,9 @@
     const defaultState = {
         totalRot: 0,
         rotCoins: 0,
-        perSec: 50000,
-        screens: 99,
-        followers: 99, // Add followers to the state
+        perSec: 0,
+        screens: 1,
+        followers: 0, // Add followers to the state
         screenPoor: false,
         x10Poor: false,
         autoTechUnlocked: false,
@@ -110,27 +110,60 @@
     // Helper to create the emoji array with a max of 100 screens
     $: screenEmojis = {
         emojis: Array.from({ length: Math.min(user.screens, 100) }, (_, index) => {
-            return { id: index, isYellow: user.screens > 100 && user.screens <= 200 && index < (user.screens - 100) };
+            return {
+                id: index,
+                backgroundColor: getColorForCount(user.screens, index)
+            };
         })
     };
 
     // Helper to create the emoji array for followers
     $: followerEmojis = {
         emojis: Array.from({ length: user.followers }, (_, index) => {
-            return { id: index, isYellow: user.followers > 100 && user.followers <= 200 && index < (user.followers - 100) };
+            return {
+                id: index,
+                backgroundColor: getColorForCount(user.followers, index)
+            };
         })
     };
+
+    // Function to get the background color based on the count
+    function getColorForCount(count, index) {
+        if (count <= 100) {
+            return "transparent";
+        } else if (count <= 200) {
+            return index < (count - 100) ? "yellow" : "transparent";
+        } else if (count <= 300) {
+            return index < (count - 200) ? "lightgreen" : "yellow";
+        } else if (count <= 400) {
+            return index < (count - 300) ? "#71BE25" : "lightgreen";
+        } else if (count <= 500) {
+            return index < (count - 400) ? "#22390b" : "#71BE25";
+        } else if (count <= 600) {
+            return index < (count - 500) ? "blue" : "#22390b";
+        } else if (count <= 700) {
+            return index < (count - 600) ? "darkblue" : "blue";
+        } else if (count <= 800) {
+            return index < (count - 700) ? "#9c66d2" : "darkblue";
+        } else if (count <= 900) {
+            return index < (count - 800) ? "#39135f" : "#9c66d2";
+        } else if (count <= 1000) {
+            return index < (count - 900) ? "black" : "#39135f";
+        } else {
+            return "transparent";
+        }
+    }
 </script>
 
 <div class="game-grid">
-    <!-- Screen Emoji Section (Left Margin) -->
+    <!-- Screen Section (Left Margin) -->
     <div class="screens-section">
         {#each screenEmojis.emojis as emoji}
-            <span 
-                class="screen-emoji" 
-                style="background-color: {emoji.isYellow ? 'yellow' : 'transparent'}">
+            <div  
+                class="screen" 
+                style="background-color: {emoji.backgroundColor}">
                 📺
-            </span>
+            </div>
         {/each}
     </div>
 
@@ -142,8 +175,11 @@
             <p>Perceived Rot: {formatNumber(user.totalRot)}</p>
             <p>Screens Owned: {user.screens}</p>
             <p>Rotcoins: ${formatNumber(user.rotCoins)}</p>
-            <p>Rot per Second: {formatNumber(user.perSec)}</p>
-            <p>Cult Followers: {user.followers}</p>
+            {#if user.autoTechUnlocked}
+                <p>Cult Followers: {user.followers}</p>
+                <p>Rot per Second: {formatNumber(user.perSec)}</p>
+            {/if}
+            
         </div>
 
         <!-- Clicker Shop (First Shop) -->
@@ -211,11 +247,11 @@
     <!-- Cult Followers Section (Right Margin) -->
     <div class="followers-section">
         {#each followerEmojis.emojis as follower}
-            <span 
-                class="follower-emoji" 
-                style="background-color: {follower.isYellow ? 'yellow' : 'transparent'}">
-                👥
-            </span>
+            <div 
+                class="follower" 
+                style="background-color: {follower.backgroundColor}">
+                🧑‍💻
+            </div>
         {/each}
     </div>
 </div>
@@ -240,14 +276,12 @@
         height: 100%; /* Match the height of the game-container */
     }
 
-    .screen-emoji, .follower-emoji {
-        font-size: 24px;
-        text-align: center;
+    .screen, .follower {
         width: 40px;
         height: 40px;
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
         border-radius: 5px;
     }
 
@@ -260,63 +294,8 @@
         height: 100%; /* Full height of the container */
     }
 
-    h1, h2 {
-        color: #4caf50;
-        font-size: 24px;
-    }
-
-    .stats, .shop, .tech-upgrades, .reset {
+    .stats {
         margin-bottom: 20px;
-    }
-
-    .shop-item {
-        margin: 10px 0;
-    }
-
-    button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: transform 0.2s ease, background-color 0.2s ease;
-        border-radius: 8px;
-        margin: 5px 0;
-    }
-
-    .seek-rot-title {
-        color: #4caf50;
-    }
-
-    .can-afford {
-        background-color: #4caf50; /* Green */
-        color: white;
-    }
-
-    .cant-afford {
-        background-color: #f44336; /* Red */
-        color: white;
-    }
-
-    .can-afford:hover,
-    .cant-afford:hover {
-        animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-
-    .video-jiggle {
-        animation: jiggle 0.1s;
-    }
-
-    @keyframes jiggle {
-        0% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        50% { transform: translateX(5px); }
-        75% { transform: translateX(-5px); }
-        100% { transform: translateX(0); }
     }
 
     .reset {
