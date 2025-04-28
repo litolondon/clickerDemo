@@ -158,6 +158,9 @@
     }
 </script>
 
+<meta name="viewport" 
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+
 <div class="game-grid">
     <!-- Screen Section (Left Margin) -->
     <div class="screens-section">
@@ -185,41 +188,48 @@
             
         </div>
 
+        <div style="justify-self: center;">
+            <h3 style="display: inline; color: red;">Seek Rot:</h3>
+            <button 
+                onclick={increment}
+                style="display: in-line; height: 128px; width: 256px; color: white; background-color: green; border-radius: 0.5rem;">
+                Next Video
+            </button>
+        </div>
+
         <!-- Clicker Shop (First Shop) -->
+        <h2 style="align-self: center; justify-self: center; text-align: center;">Clicker Shop</h2>
         <div class="shop">
-            <h2>Clicker Shop</h2>
             <div class="shop-item">
-                <p class="seek-rot-title">Seek Rot:</p>
-                <button 
-                    class={videoButtonClicked ? "video-jiggle" : ""}
-                    onclick={increment}>
-                    Next Video
-                </button>
-            </div>
-            <div class="shop-item">
-                <p>Extra Screen: </p>
+                <p>Extra Phone Screen: </p>
                 <button 
                     class={user.rotCoins >= user.screenCost ? "can-afford" : "cant-afford"}
-                    onclick={buyScreen}>
+                    onclick={buyScreen}
+                    style="width: 100%; min-height: 64px;">
                     ${formatNumber(user.screenCost)} Rotcoins
                 </button>
             </div>
+
+            {#if user.screens >= 10}
             <div class="shop-item">
-                <p>10 Extra Monitors: </p>
+                <p>Extra Monitor Screen: </p>
                 <button 
                     class={user.rotCoins >= user.x10Cost ? "can-afford" : "cant-afford"}
-                    onclick={buyX10}>
+                    onclick={buyX10}
+                    style="width: 100%; min-height: 64px;">
                     ${formatNumber(user.x10Cost)} Rotcoins
                 </button>
             </div>
+            {/if}
 
             <!-- Unlock Auto-Rot Technologies -->
             {#if !user.autoTechUnlocked}
-                <div class="shop-item">
+                <div class="shop-item" id="auto-tech">
                     <p>Unlock Auto-Rot Technologies:</p>
                     <button 
                         class={user.rotCoins >= user.autoTechCost ? "can-afford" : "cant-afford"}
-                        onclick={buyAutoTech}>
+                        onclick={buyAutoTech}
+                        style="width: 100%; min-height: 64px;">
                         ${formatNumber(user.autoTechCost)} Rotcoins
                     </button>
                 </div>
@@ -229,22 +239,21 @@
         <!-- Idle Tech Shop (Only Available After Unlocking Auto-Rot Technologies) -->
         {#if user.autoTechUnlocked}
             <div class="tech-upgrades">
-                <h2>Auto-Rot Technologies</h2>
-                <div class="shop-item">
-                    <p>Rot Cult Follower:</p>
-                    <button 
-                        class={user.rotCoins >= user.followerCost ? "can-afford" : "cant-afford"}
-                        onclick={buyFollower}>
-                        ${formatNumber(user.followerCost)} Rotcoins
-                    </button>
+                <h2 style="justify-self: center;">Auto-Rot Technologies</h2>
+                <div class="shop">
+                    <div class="shop-item">
+                        <p>Rot Cult Follower:</p>
+                        <button 
+                            class={user.rotCoins >= user.followerCost ? "can-afford" : "cant-afford"}
+                            onclick={buyFollower}
+                            style="width: 100%; min-height: 64px;">
+                            ${formatNumber(user.followerCost)} Rotcoins
+                        </button>
+                    </div>
                 </div>
+                
             </div>
         {/if}
-
-        <!-- Reset Button -->
-        <div class="reset">
-            <button onclick={resetGame}>Reset Game</button>
-        </div>
     </div>
 
     <!-- Cult Followers Section (Right Margin) -->
@@ -257,7 +266,13 @@
             </div>
         {/each}
     </div>
+
+    <!-- Reset Button -->
+    <div class="reset">
+        <button onclick={resetGame}>Reset Game</button>
+    </div>
 </div>
+
 
 <style>
     .game-grid {
@@ -304,12 +319,32 @@
 
     .reset {
         margin-top: 20px;
-        text-align: center;
+        grid-column-start: 2;
+        grid-column-end: 2;
+        justify-self: center;
+        align-self: center;
     }
 
     .reset button {
         background-color: #f44336; /* Red */
         color: white;
         font-size: 18px;
+        justify-self: end;
+    }
+
+    .shop {
+        display: flex;
+        grid-template-columns: 1fr 1fr;
+        border: 4px black solid; border-radius: 0.5rem;
+        gap: 8px;
+    }
+
+    .shop-item {
+        margin: 8px;
+        display: f;
+    }
+
+    #auto-tech {
+        align-self: flex-end;
     }
 </style>
