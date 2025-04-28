@@ -190,7 +190,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
     <div class="game-container">
         <!-- Game Stats Section -->
         <div class="stats">
-            <h1 title="here" use:tooltip>Brain Rot Clicker</h1>
+            <h1>Brain Rot Clicker</h1>
             <p>Perceived Rot: {formatNumber(user.totalRot)}</p>
             <p>Screens Owned: {user.screens}</p>
             <p>Rotcoins: ${formatNumber(user.rotCoins)}</p>
