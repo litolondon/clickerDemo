@@ -101,10 +101,13 @@
     }
 
     function resetGame() {
-        if (typeof window !== "undefined") {
+        if (window.confirm("Are you sure you want to reset?\nTHIS IS NOT A PRESTIGE!!!")) {
             localStorage.removeItem('gameState');
+            user = { ...defaultState };
+            alert("Brain Rot Clicker\n\nBuy more screens, watch more videos, expand your knowledge of brainrot.");
+        } else {
+            alert("RESET ABORTED!!!\nBack to rotting...");
         }
-        user = { ...defaultState };
     }
 
     // Helper to create the emoji array with a max of 100 screens
