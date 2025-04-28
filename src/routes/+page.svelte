@@ -135,7 +135,7 @@
 
     // Helper to create the emoji array for followers
     $: followerEmojis = {
-        emojis: Array.from({ length: Math.min(user.screens, 100) }, (_, index) => {
+        emojis: Array.from({ length: Math.min(user.followers, 100) }, (_, index) => {
             return {
                 id: index,
                 backgroundColor: getColorForCount(user.followers, index)
