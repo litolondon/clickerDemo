@@ -330,6 +330,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
         color: white;
         font-size: 18px;
         justify-self: end;
+        margin-top: 16px;
     }
 
     .shop {
