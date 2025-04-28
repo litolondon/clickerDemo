@@ -1,9 +1,10 @@
 <script>
     import { onMount } from "svelte";
+    import Tooltip from "./Tooltip.svelte";
 
     const defaultState = {
-        totalRot: 0,
-        rotCoins: 0,
+        totalRot: 1000000,
+        rotCoins: 1000000,
         perSec: 0,
         screens: 1,
         followers: 0, // Add followers to the state
@@ -13,7 +14,8 @@
         screenCost: 50,
         x10Cost: 1000,
         autoTechCost: 2000,
-        followerCost: 1500
+        followerCost: 1500,
+        legionCost: 50000
     };
 
     function loadState() {
@@ -100,6 +102,17 @@
         }
     }
 
+    function buyLegion() {
+        if (user.rotCoins >= user.legionCost) {
+            user.followers += 10;
+            user.perSec += 250; // Each follower adds 25 rot per second
+            user.rotCoins -= user.legionCost;
+            user.legionCost = Math.floor(user.legionCost * 1.25);
+        } else {
+            alert(`You must have at least $${formatNumber(user.legionCostCost)} for a Rot Cult Legion!`);
+        }
+    }
+
     function resetGame() {
         if (window.confirm("Are you sure you want to reset?\nTHIS IS NOT A PRESTIGE!!!")) {
             localStorage.removeItem('gameState');
@@ -122,7 +135,7 @@
 
     // Helper to create the emoji array for followers
     $: followerEmojis = {
-        emojis: Array.from({ length: user.followers }, (_, index) => {
+        emojis: Array.from({ length: Math.min(user.screens, 100) }, (_, index) => {
             return {
                 id: index,
                 backgroundColor: getColorForCount(user.followers, index)
@@ -177,7 +190,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
     <div class="game-container">
         <!-- Game Stats Section -->
         <div class="stats">
-            <h1>Brain Rot Clicker</h1>
+            <h1 title="here" use:tooltip>Brain Rot Clicker</h1>
             <p>Perceived Rot: {formatNumber(user.totalRot)}</p>
             <p>Screens Owned: {user.screens}</p>
             <p>Rotcoins: ${formatNumber(user.rotCoins)}</p>
@@ -202,36 +215,42 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
         <div class="shop">
             <div class="shop-item">
                 <p>Extra Phone Screen: </p>
-                <button 
+                <Tooltip title="$1 Rot/click">
+                    <button 
                     class={user.rotCoins >= user.screenCost ? "can-afford" : "cant-afford"}
                     onclick={buyScreen}
                     style="width: 100%; min-height: 64px;">
                     ${formatNumber(user.screenCost)} Rotcoins
-                </button>
+                    </button>
+                </Tooltip>
             </div>
 
             {#if user.screens >= 10}
-            <div class="shop-item">
-                <p>Extra Monitor Screen: </p>
-                <button 
-                    class={user.rotCoins >= user.x10Cost ? "can-afford" : "cant-afford"}
-                    onclick={buyX10}
-                    style="width: 100%; min-height: 64px;">
-                    ${formatNumber(user.x10Cost)} Rotcoins
-                </button>
-            </div>
+                <div class="shop-item">
+                    <p>Extra Monitor Screen: </p>
+                    <Tooltip title="$10 Rot/click">
+                        <button 
+                        class={user.rotCoins >= user.x10Cost ? "can-afford" : "cant-afford"}
+                        onclick={buyX10}
+                        style="width: 100%; min-height: 64px;">
+                        ${formatNumber(user.x10Cost)} Rotcoins
+                        </button>
+                    </Tooltip>
+                </div>
             {/if}
 
             <!-- Unlock Auto-Rot Technologies -->
             {#if !user.autoTechUnlocked}
                 <div class="shop-item" id="auto-tech">
                     <p>Unlock Auto-Rot Technologies:</p>
-                    <button 
+                    <Tooltip title="Rot Per Second?!?">
+                        <button 
                         class={user.rotCoins >= user.autoTechCost ? "can-afford" : "cant-afford"}
                         onclick={buyAutoTech}
                         style="width: 100%; min-height: 64px;">
                         ${formatNumber(user.autoTechCost)} Rotcoins
-                    </button>
+                        </button>
+                    </Tooltip>
                 </div>
             {/if}
         </div>
@@ -243,12 +262,25 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
                 <div class="shop">
                     <div class="shop-item">
                         <p>Rot Cult Follower:</p>
-                        <button 
+                        <Tooltip title="$25 Rot/second">
+                            <button 
                             class={user.rotCoins >= user.followerCost ? "can-afford" : "cant-afford"}
                             onclick={buyFollower}
                             style="width: 100%; min-height: 64px;">
                             ${formatNumber(user.followerCost)} Rotcoins
-                        </button>
+                            </button>
+                        </Tooltip>
+                    </div>
+                    <div class="shop-item">
+                        <p>Rot Cult Legion:</p>
+                        <Tooltip title="$250 Rot/second">
+                            <button 
+                            class={user.rotCoins >= user.legionCostCost ? "can-afford" : "cant-afford"}
+                            onclick={buyLegion}
+                            style="width: 100%; min-height: 64px;">
+                            ${formatNumber(user.legionCost)} Rotcoins
+                            </button>
+                        </Tooltip>
                     </div>
                 </div>
                 
