@@ -109,7 +109,7 @@
             user.rotCoins -= user.legionCost;
             user.legionCost = Math.floor(user.legionCost * 1.25);
         } else {
-            alert(`You must have at least $${formatNumber(user.legionCostCost)} for a Rot Cult Legion!`);
+            alert(`You must have at least $${formatNumber(user.legionCost)} for a Rot Cult Legion!`);
         }
     }
 
