@@ -5,7 +5,7 @@
     const defaultState = {
         totalRot: 1000000,
         rotCoins: 1000000,
-        perSec: 0,
+        perSec: 10000000000,
         screens: 1,
         followers: 0, // Add followers to the state
         screenPoor: false,
@@ -374,7 +374,6 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
     .shop-item {
         margin: 8px;
-        display: f;
     }
 
     #auto-tech {
